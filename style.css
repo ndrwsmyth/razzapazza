@@ -5,7 +5,7 @@ body, html {
     font-family: "Lora", serif;
     font-optical-sizing: auto;
     font-style: normal;
-    background-color: #FAFAFA; /* White background */
+    background-color: #F7F7F3; /* White background */
 }
 
 .container {
@@ -13,20 +13,24 @@ body, html {
     display: flex;
     justify-content: center; /* Center Horizontally */
     align-items: center;     /* Center Vertically */
+    padding: 0 20px;         /* Prevent edge-to-edge text on small screens */
 }
 
 .content {
     display: flex;
     flex-direction: column;
     align-items: center;
+    text-align: center;      /* Ensure text centers if it wraps */
+    max-width: 100%;         /* Ensure content doesn't overflow container */
 }
 
 h1 {
-    font-size: 72px;         /* Big text */
+    font-size: 72px;         /* Big text for desktop */
     font-weight: normal;
     color: #000;             /* Black text */
     margin: 0;
     letter-spacing: -1px;    /* Slight tighten for that "Modern" look */
+    line-height: 1.1;        /* Better line height for multi-line text */
 }
 
 .accent-line {
@@ -41,4 +45,21 @@ h1 {
     font-style: italic;
     font-size: 20px;
     color: #000;
+}
+
+/* Responsive adjustments for mobile screens */
+@media (max-width: 600px) {
+    h1 {
+        font-size: 12vw;      /* Scales with viewport width */
+    }
+    
+    .accent-line {
+        width: 10vw;          /* Scales proportionally to the text */
+        margin-top: 20px;
+        margin-bottom: 12px;
+    }
+    
+    .year {
+        font-size: 3.5vw;     /* Scales proportionally */
+    }
 }
