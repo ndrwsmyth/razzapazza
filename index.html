@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Razza Pazza</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
@@ -44,9 +44,13 @@
             return 1 - Math.pow(1 - t, 3);
         }
 
+        function getViewportHeight() {
+            return window.visualViewport ? window.visualViewport.height : window.innerHeight;
+        }
+
         function onScroll() {
             const rect = about.getBoundingClientRect();
-            const windowH = window.innerHeight;
+            const windowH = getViewportHeight();
 
             const progress = Math.min(1, Math.max(0, 1 - rect.top / windowH));
             const eased = easeOutCubic(progress);
@@ -106,9 +110,10 @@
 
         document.addEventListener('click', function () {
             if (isAnimating) return;
-            const windowH = window.innerHeight;
-            if (window.scrollY < windowH / 2) {
-                smoothScrollTo(windowH);
+            // Use the landing section's actual rendered height as scroll target
+            const sectionH = landing.offsetHeight;
+            if (window.scrollY < sectionH / 2) {
+                smoothScrollTo(sectionH);
             } else {
                 smoothScrollTo(0);
             }
