@@ -131,27 +131,17 @@
             container.style.scrollSnapType = 'y mandatory';
         });
 
-        // Form submission
-        form.addEventListener('submit', function (e) {
-            e.preventDefault();
+        // Submit the form data to the API
+        function submitForm(turnstileToken) {
             var btn = form.querySelector('button[type="submit"]');
             var email = form.querySelector('input[type="email"]').value;
-            var turnstileResponse = '';
-
-            if (typeof turnstile !== 'undefined') {
-                turnstileResponse = turnstile.getResponse();
-            }
-
-            btn.disabled = true;
-            formStatus.textContent = '';
-            formStatus.className = 'form-status';
 
             fetch(WORKER_URL + '/subscribe', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     email: email,
-                    cf_turnstile_response: turnstileResponse
+                    cf_turnstile_response: turnstileToken
                 })
             })
             .then(function (res) {
@@ -184,6 +174,30 @@
                     turnstile.reset();
                 }
             });
+        }
+
+        // Form submission — execute Turnstile challenge, then submit on callback
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            var btn = form.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            formStatus.textContent = '';
+            formStatus.className = 'form-status';
+
+            if (typeof turnstile !== 'undefined') {
+                turnstile.execute(document.querySelector('.cf-turnstile'), {
+                    callback: function (token) {
+                        submitForm(token);
+                    },
+                    'error-callback': function () {
+                        formStatus.textContent = 'Verification failed. Please try again.';
+                        formStatus.className = 'form-status error';
+                        btn.disabled = false;
+                    }
+                });
+            } else {
+                submitForm('');
+            }
         });
     </script>
 
