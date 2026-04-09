@@ -7,6 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://challenges.cloudflare.com">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -25,6 +27,18 @@
         <section class="about">
             <p class="about-text">Razza Pazza partners with entertainers, artists, creators, and leading brands to design, produce, and distribute jewelry. We&rsquo;re backed by the manufacturer behind the world&rsquo;s top luxury houses and work alongside you from concept to customer.</p>
         </section>
+
+        <section class="contact">
+            <div class="contact-inner">
+                <h2>Interested? Write us.</h2>
+                <form id="contact-form">
+                    <input type="email" name="email" required placeholder="your@email.com" autocomplete="email">
+                    <div class="cf-turnstile" data-sitekey="0x4AAAAAAC2zcDcujFr4T9yc" data-theme="light" data-size="invisible"></div>
+                    <button type="submit"><em>Submit</em></button>
+                </form>
+                <p id="form-status" class="form-status" aria-live="polite"></p>
+            </div>
+        </section>
     </div>
 
     <footer>
@@ -38,10 +52,14 @@
         console.log('%c\u{1F48E}', 'font-size: 60px;');
 
         var container = document.querySelector('.scroll-container');
-        var about = document.querySelector('.about');
         var aboutText = document.querySelector('.about-text');
+        var contactInner = document.querySelector('.contact-inner');
         var scrollHint = document.querySelector('.scroll-hint');
-        var landing = document.querySelector('.landing');
+        var contactSection = document.querySelector('.contact');
+        var form = document.getElementById('contact-form');
+        var formStatus = document.getElementById('form-status');
+        var WORKER_URL = 'https://api.razzapazza.com';
+        var TOTAL_SECTIONS = 3;
 
         var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -49,21 +67,28 @@
             return 1 - Math.pow(1 - t, 3);
         }
 
-        function onScroll() {
-            var scrollTop = container.scrollTop;
-            var viewH = container.offsetHeight;
-            var progress = Math.min(1, Math.max(0, scrollTop / viewH));
+        function animateElement(el, scrollTop, viewH, pageIndex) {
+            var start = pageIndex * viewH;
+            var progress = Math.min(1, Math.max(0, (scrollTop - start) / viewH));
             var eased = easeOutCubic(progress);
 
             if (reducedMotion) {
-                aboutText.style.opacity = progress > 0.1 ? 1 : 0;
+                el.style.opacity = progress > 0.1 ? 1 : 0;
                 return;
             }
 
-            aboutText.style.opacity = eased;
-            aboutText.style.transform = 'translateY(' + (30 * (1 - eased)) + 'px)';
+            el.style.opacity = eased;
+            el.style.transform = 'translateY(' + (30 * (1 - eased)) + 'px)';
+        }
 
-            if (progress > 0.05) {
+        function onScroll() {
+            var scrollTop = container.scrollTop;
+            var viewH = container.offsetHeight;
+
+            animateElement(aboutText, scrollTop, viewH, 0);
+            animateElement(contactInner, scrollTop, viewH, 1);
+
+            if (scrollTop / viewH > 0.05) {
                 scrollHint.classList.add('hidden');
             } else {
                 scrollHint.classList.remove('hidden');
@@ -73,23 +98,92 @@
         container.addEventListener('scroll', onScroll, { passive: true });
         onScroll();
 
-        // Click/tap to toggle
-        document.addEventListener('click', function () {
+        // Click/tap to cycle sections (but not inside contact form)
+        document.addEventListener('click', function (e) {
+            if (contactSection.contains(e.target)) return;
             var viewH = container.offsetHeight;
-            var target = container.scrollTop < viewH / 2 ? viewH : 0;
-            container.scrollTo({ top: target, behavior: 'smooth' });
+            var current = Math.round(container.scrollTop / viewH);
+            var next = (current + 1) % TOTAL_SECTIONS;
+            container.scrollTo({ top: next * viewH, behavior: 'smooth' });
         });
 
-        // Keyboard
+        // Keyboard navigation
         document.addEventListener('keydown', function (e) {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
             var viewH = container.offsetHeight;
+            var current = Math.round(container.scrollTop / viewH);
             if (e.key === 'ArrowDown' || e.key === ' ' || e.key === 'PageDown') {
                 e.preventDefault();
-                container.scrollTo({ top: viewH, behavior: 'smooth' });
+                var next = Math.min(current + 1, TOTAL_SECTIONS - 1);
+                container.scrollTo({ top: next * viewH, behavior: 'smooth' });
             } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
                 e.preventDefault();
-                container.scrollTo({ top: 0, behavior: 'smooth' });
+                var prev = Math.max(current - 1, 0);
+                container.scrollTo({ top: prev * viewH, behavior: 'smooth' });
             }
+        });
+
+        // iOS keyboard fix: disable scroll-snap when input focused
+        form.addEventListener('focusin', function () {
+            container.style.scrollSnapType = 'none';
+        });
+        form.addEventListener('focusout', function () {
+            container.style.scrollSnapType = 'y mandatory';
+        });
+
+        // Form submission
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            var btn = form.querySelector('button[type="submit"]');
+            var email = form.querySelector('input[type="email"]').value;
+            var turnstileResponse = '';
+
+            if (typeof turnstile !== 'undefined') {
+                turnstileResponse = turnstile.getResponse();
+            }
+
+            btn.disabled = true;
+            formStatus.textContent = '';
+            formStatus.className = 'form-status';
+
+            fetch(WORKER_URL + '/subscribe', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: email,
+                    cf_turnstile_response: turnstileResponse
+                })
+            })
+            .then(function (res) {
+                return res.json().then(function (data) {
+                    return { ok: res.ok, status: res.status, data: data };
+                });
+            })
+            .then(function (result) {
+                if (result.ok) {
+                    formStatus.textContent = 'Thanks \u2014 we\u2019ll be in touch.';
+                    formStatus.className = 'form-status success';
+                    form.querySelector('input[type="email"]').disabled = true;
+                } else if (result.status === 429) {
+                    formStatus.textContent = 'Too many requests. Please try again later.';
+                    formStatus.className = 'form-status error';
+                    btn.disabled = false;
+                } else {
+                    formStatus.textContent = result.data.message || 'Something went wrong.';
+                    formStatus.className = 'form-status error';
+                    btn.disabled = false;
+                }
+            })
+            .catch(function () {
+                formStatus.textContent = 'Something went wrong. Please try again.';
+                formStatus.className = 'form-status error';
+                btn.disabled = false;
+            })
+            .finally(function () {
+                if (typeof turnstile !== 'undefined') {
+                    turnstile.reset();
+                }
+            });
         });
     </script>
 
