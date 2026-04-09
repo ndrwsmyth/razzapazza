@@ -1,6 +1,6 @@
 # Cloudflare Setup Guide
 
-Everything you need to connect the email intake form to Cloudflare Workers + D1.
+Step-by-step guide to connect the email intake form to Cloudflare Workers + D1.
 
 ## Prerequisites
 
