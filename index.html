@@ -33,7 +33,16 @@
                 <h2>Interested? Write us.</h2>
                 <form id="contact-form">
                     <input type="email" name="email" required placeholder="your@email.com" autocomplete="email">
-                    <div class="cf-turnstile" data-sitekey="0x4AAAAAAC2zcDcujFr4T9yc" data-theme="light"></div>
+                    <div
+                        class="cf-turnstile"
+                        data-sitekey="0x4AAAAAAC2zcDcujFr4T9yc"
+                        data-theme="light"
+                        data-appearance="interaction-only"
+                        data-execution="execute"
+                        data-callback="onTurnstileSuccess"
+                        data-error-callback="onTurnstileError"
+                        data-expired-callback="onTurnstileExpired"
+                    ></div>
                     <button type="submit"><em>Submit</em></button>
                 </form>
                 <p id="form-status" class="form-status" aria-live="polite"></p>
@@ -60,6 +69,7 @@
         var formStatus = document.getElementById('form-status');
         var WORKER_URL = 'https://api.razzapazza.com';
         var TOTAL_SECTIONS = 3;
+        var turnstileEl = document.querySelector('.cf-turnstile');
 
         var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -177,6 +187,24 @@
             });
         }
 
+        window.onTurnstileSuccess = function (token) {
+            submitForm(token);
+        };
+
+        window.onTurnstileError = function () {
+            var btn = form.querySelector('button[type="submit"]');
+            formStatus.textContent = 'Verification failed. Please try again.';
+            formStatus.className = 'form-status error';
+            btn.disabled = false;
+        };
+
+        window.onTurnstileExpired = function () {
+            var btn = form.querySelector('button[type="submit"]');
+            formStatus.textContent = 'Verification expired. Please try again.';
+            formStatus.className = 'form-status error';
+            btn.disabled = false;
+        };
+
         // Form submission — execute Turnstile challenge, then submit on callback
         form.addEventListener('submit', function (e) {
             e.preventDefault();
@@ -186,18 +214,11 @@
             formStatus.className = 'form-status';
 
             if (typeof turnstile !== 'undefined') {
-                turnstile.execute(document.querySelector('.cf-turnstile'), {
-                    callback: function (token) {
-                        submitForm(token);
-                    },
-                    'error-callback': function () {
-                        formStatus.textContent = 'Verification failed. Please try again.';
-                        formStatus.className = 'form-status error';
-                        btn.disabled = false;
-                    }
-                });
+                turnstile.execute(turnstileEl);
             } else {
-                submitForm('');
+                formStatus.textContent = 'Verification is unavailable. Please reload and try again.';
+                formStatus.className = 'form-status error';
+                btn.disabled = false;
             }
         });
     </script>

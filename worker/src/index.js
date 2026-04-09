@@ -34,8 +34,19 @@ async function verifyTurnstile(token, ip, secretKey) {
       remoteip: ip,
     }),
   });
-  const result = await res.json();
-  return result.success === true;
+  return res.json();
+}
+
+function messageForTurnstileError(errorCodes = []) {
+  if (errorCodes.includes('timeout-or-duplicate')) {
+    return 'Verification expired. Please try again.';
+  }
+
+  if (errorCodes.includes('invalid-input-secret') || errorCodes.includes('missing-input-secret')) {
+    return 'Verification is misconfigured. Please try again later.';
+  }
+
+  return 'Verification failed. Please try again.';
 }
 
 export default {
@@ -61,8 +72,23 @@ export default {
       const userAgent = request.headers.get('User-Agent') || '';
 
       // Verify Turnstile
-      if (!turnstileToken || !(await verifyTurnstile(turnstileToken, ip, env.TURNSTILE_SECRET_KEY))) {
+      if (!turnstileToken) {
         return json({ message: 'Verification failed. Please try again.' }, 400, origin);
+      }
+
+      const verification = await verifyTurnstile(turnstileToken, ip, env.TURNSTILE_SECRET_KEY);
+
+      if (verification.success !== true) {
+        console.error('Turnstile verification failed', {
+          errorCodes: verification['error-codes'] || [],
+          hostname: verification.hostname || '',
+          action: verification.action || '',
+        });
+        return json(
+          { message: messageForTurnstileError(verification['error-codes'] || []) },
+          400,
+          origin
+        );
       }
 
       // Validate email
