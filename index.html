@@ -138,7 +138,8 @@
 
             fetch(WORKER_URL + '/subscribe', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                // Use a simple request to avoid a separate CORS preflight.
+                headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
                 body: JSON.stringify({
                     email: email,
                     cf_turnstile_response: turnstileToken
