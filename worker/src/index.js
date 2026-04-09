@@ -79,11 +79,6 @@ export default {
       const verification = await verifyTurnstile(turnstileToken, ip, env.TURNSTILE_SECRET_KEY);
 
       if (verification.success !== true) {
-        console.error('Turnstile verification failed', {
-          errorCodes: verification['error-codes'] || [],
-          hostname: verification.hostname || '',
-          action: verification.action || '',
-        });
         return json(
           { message: messageForTurnstileError(verification['error-codes'] || []) },
           400,
