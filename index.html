@@ -38,19 +38,16 @@
         const about = document.querySelector('.about');
         const aboutText = document.querySelector('.about-text');
         const scrollHint = document.querySelector('.scroll-hint');
+        const landing = document.querySelector('.landing');
+        const root = document.documentElement;
 
-        // ease-out-cubic: fast start, gentle settle
         function easeOutCubic(t) {
             return 1 - Math.pow(1 - t, 3);
         }
 
-        function getViewportHeight() {
-            return window.visualViewport ? window.visualViewport.height : window.innerHeight;
-        }
-
         function onScroll() {
             const rect = about.getBoundingClientRect();
-            const windowH = getViewportHeight();
+            const windowH = landing.offsetHeight;
 
             const progress = Math.min(1, Math.max(0, 1 - rect.top / windowH));
             const eased = easeOutCubic(progress);
@@ -61,7 +58,7 @@
             }
 
             aboutText.style.opacity = eased;
-            aboutText.style.transform = `translateY(${30 * (1 - eased)}px)`;
+            aboutText.style.transform = 'translateY(' + (30 * (1 - eased)) + 'px)';
 
             if (progress > 0.05) {
                 scrollHint.classList.add('hidden');
@@ -73,16 +70,14 @@
         window.addEventListener('scroll', onScroll, { passive: true });
         onScroll();
 
+        // Click/tap to toggle between sections
         const SCROLL_DURATION = 800;
-        const landing = document.querySelector('.landing');
-        const root = document.documentElement;
         let isAnimating = false;
 
         function smoothScrollTo(targetY) {
             if (isAnimating) return;
             isAnimating = true;
 
-            // Disable snap so it doesn't fight the animation
             root.style.scrollSnapType = 'none';
 
             const startY = window.scrollY;
@@ -99,7 +94,6 @@
                 if (t < 1) {
                     requestAnimationFrame(step);
                 } else {
-                    // Re-enable snap after animation completes
                     root.style.scrollSnapType = 'y mandatory';
                     isAnimating = false;
                 }
@@ -110,8 +104,7 @@
 
         document.addEventListener('click', function () {
             if (isAnimating) return;
-            // Use the landing section's actual rendered height as scroll target
-            const sectionH = landing.offsetHeight;
+            var sectionH = landing.offsetHeight;
             if (window.scrollY < sectionH / 2) {
                 smoothScrollTo(sectionH);
             } else {

@@ -25,7 +25,7 @@ body, html {
 /* ---- Landing ---- */
 
 .landing {
-    height: 100dvh;
+    height: 100svh;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -74,12 +74,12 @@ h1 {
 /* ---- About ---- */
 
 .about {
-    height: 100dvh;
+    height: 100svh;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 0 20px 4rem;
+    padding: 0 20px calc(4rem + env(safe-area-inset-bottom, 0px));
     position: relative;
     scroll-snap-align: start;
 }
@@ -120,10 +120,6 @@ footer {
 /* ---- Reduced Motion ---- */
 
 @media (prefers-reduced-motion: reduce) {
-    html {
-        scroll-behavior: auto;
-    }
-
     h1 {
         animation: none;
     }
