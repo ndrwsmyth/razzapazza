@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Razza Pazza</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -9,15 +10,110 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    
-    <div class="container">
-        <div class="content">
-            <h1>Razza Pazza</h1>
-            <div class="accent-line"></div>
-            <div class="year">2025</div>
+
+    <section class="landing">
+        <h1>Razza Pazza</h1>
+        <div class="scroll-hint" aria-hidden="true">
+            <svg width="20" height="10" viewBox="0 0 20 10" fill="none">
+                <path d="M1 1l9 8 9-8" stroke="#8C2017" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
         </div>
-    </div>
+    </section>
+
+    <section class="about">
+        <p class="about-text">Razza Pazza partners with entertainers, artists, creators, and leading brands to design, produce, and distribute jewelry. We&rsquo;re backed by the manufacturer behind the world&rsquo;s top luxury houses and work alongside you from concept to customer.</p>
+    </section>
+
+    <footer>
+        <div class="footer-inner">
+            <span>New York, NY</span>
+            <span>All rights reserved &copy; Razza Pazza 2026</span>
+        </div>
+    </footer>
+
+    <script>
+        console.log('%c\u{1F48E}', 'font-size: 60px;');
+
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const about = document.querySelector('.about');
+        const aboutText = document.querySelector('.about-text');
+        const scrollHint = document.querySelector('.scroll-hint');
+
+        // ease-out-cubic: fast start, gentle settle
+        function easeOutCubic(t) {
+            return 1 - Math.pow(1 - t, 3);
+        }
+
+        function onScroll() {
+            const rect = about.getBoundingClientRect();
+            const windowH = window.innerHeight;
+
+            const progress = Math.min(1, Math.max(0, 1 - rect.top / windowH));
+            const eased = easeOutCubic(progress);
+
+            if (reducedMotion) {
+                aboutText.style.opacity = progress > 0.1 ? 1 : 0;
+                return;
+            }
+
+            aboutText.style.opacity = eased;
+            aboutText.style.transform = `translateY(${30 * (1 - eased)}px)`;
+
+            if (progress > 0.05) {
+                scrollHint.classList.add('hidden');
+            } else {
+                scrollHint.classList.remove('hidden');
+            }
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+
+        const SCROLL_DURATION = 800;
+        const landing = document.querySelector('.landing');
+        const root = document.documentElement;
+        let isAnimating = false;
+
+        function smoothScrollTo(targetY) {
+            if (isAnimating) return;
+            isAnimating = true;
+
+            // Disable snap so it doesn't fight the animation
+            root.style.scrollSnapType = 'none';
+
+            const startY = window.scrollY;
+            const delta = targetY - startY;
+            const startTime = performance.now();
+
+            function step(now) {
+                const elapsed = now - startTime;
+                const t = Math.min(1, elapsed / SCROLL_DURATION);
+                const eased = easeOutCubic(t);
+
+                window.scrollTo(0, startY + delta * eased);
+
+                if (t < 1) {
+                    requestAnimationFrame(step);
+                } else {
+                    // Re-enable snap after animation completes
+                    root.style.scrollSnapType = 'y mandatory';
+                    isAnimating = false;
+                }
+            }
+
+            requestAnimationFrame(step);
+        }
+
+        document.addEventListener('click', function () {
+            if (isAnimating) return;
+            const windowH = window.innerHeight;
+            if (window.scrollY < windowH / 2) {
+                smoothScrollTo(windowH);
+            } else {
+                smoothScrollTo(0);
+            }
+        });
+    </script>
 
 </body>
 </html>
-
