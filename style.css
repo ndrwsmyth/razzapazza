@@ -1,67 +1,150 @@
-/* Make the whole page a flexbox to center the content */
-body, html {
-    height: 100%;
+* {
     margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    overflow: hidden;
     font-family: "Lora", serif;
     font-optical-sizing: auto;
     font-style: normal;
-    background-color: #F7F7F3; /* White background */
-    overflow: hidden;        /* Prevent scrolling */
-    touch-action: none;      /* Disable touch gestures */
+    font-weight: 400;
+    background-color: #F7F7F4;
+    color: #8C2017;
 }
 
-.container {
+/* ---- Scroll container: this scrolls, not the page ---- */
+
+.scroll-container {
+    height: 100%;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.scroll-container::-webkit-scrollbar {
+    display: none;
+}
+
+/* ---- Landing ---- */
+
+.landing {
     height: 100%;
     display: flex;
-    justify-content: center; /* Center Horizontally */
-    align-items: center;     /* Center Vertically */
-    padding: 0 20px;         /* Prevent edge-to-edge text on small screens */
-}
-
-.content {
-    display: flex;
-    flex-direction: column;
+    justify-content: center;
     align-items: center;
-    text-align: center;      /* Ensure text centers if it wraps */
-    max-width: 100%;         /* Ensure content doesn't overflow container */
+    padding: 0 20px;
+    scroll-snap-align: start;
+    position: relative;
 }
 
 h1 {
-    font-size: 72px;         /* Big text for desktop */
-    font-weight: normal;
-    color: #000;             /* Black text */
-    margin: 0;
-    letter-spacing: -1px;    /* Slight tighten for that "Modern" look */
-    line-height: 1.1;        /* Better line height for multi-line text */
+    font-size: clamp(2.5rem, 8vw, 4.5rem);
+    font-weight: 400;
+    letter-spacing: -1px;
+    line-height: 1.1;
+    animation: fadeIn 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) both;
 }
 
-.accent-line {
-    width: 60px;
-    height: 1px;
-    background-color: #383838;
-    margin-top: 24px;
-    margin-bottom: 16px;
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
-.year {
-    font-style: italic;
-    font-size: 20px;
-    color: #000;
+.scroll-hint {
+    position: absolute;
+    bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+    opacity: 0;
+    animation: hintFadeIn 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) 1.2s forwards,
+               bounce 2s cubic-bezier(0.45, 0.03, 0.515, 0.955) 2s infinite;
+    transition: opacity 0.4s cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
-/* Responsive adjustments for mobile screens */
-@media (max-width: 600px) {
+.scroll-hint.hidden {
+    opacity: 0 !important;
+    animation: none;
+}
+
+@keyframes hintFadeIn {
+    from { opacity: 0; }
+    to { opacity: 0.5; }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(6px); }
+}
+
+/* ---- About ---- */
+
+.about {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0 20px calc(4rem + env(safe-area-inset-bottom, 0px));
+    scroll-snap-align: start;
+}
+
+.about-text {
+    will-change: opacity, transform;
+    max-width: 540px;
+    font-size: clamp(1rem, 2vw, 1.15rem);
+    line-height: 1.75;
+    text-align: center;
+}
+
+/* ---- Footer ---- */
+
+footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #F7F7F4;
+    z-index: 10;
+    padding: 0 20px env(safe-area-inset-bottom, 0px);
+}
+
+.footer-inner {
+    max-width: 540px;
+    margin: 0 auto;
+    padding: 1rem 0;
+    border-top: 1px solid #CCCCCC;
+    display: flex;
+    justify-content: space-between;
+    white-space: nowrap;
+    color: #999999;
+    font-size: clamp(0.65rem, 1.5vw, 0.8rem);
+    line-height: 1.5;
+}
+
+/* ---- Reduced Motion ---- */
+
+@media (prefers-reduced-motion: reduce) {
     h1 {
-        font-size: 12vw;      /* Scales with viewport width */
+        animation: none;
     }
-    
-    .accent-line {
-        width: 10vw;          /* Scales proportionally to the text */
-        margin-top: 20px;
-        margin-bottom: 12px;
+
+    .about-text {
+        will-change: auto;
     }
-    
-    .year {
-        font-size: 3.5vw;     /* Scales proportionally */
+
+    .scroll-hint {
+        animation: none;
+        opacity: 0.5;
+    }
+}
+
+/* ---- Mobile ---- */
+
+@media (max-width: 600px) {
+    .about-text {
+        max-width: 100%;
+        padding: 0 10px;
     }
 }

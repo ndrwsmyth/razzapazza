@@ -1,23 +1,96 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Razza Pazza</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    
-    <div class="container">
-        <div class="content">
+
+    <div class="scroll-container">
+        <section class="landing">
             <h1>Razza Pazza</h1>
-            <div class="accent-line"></div>
-            <div class="year">2025</div>
-        </div>
+            <div class="scroll-hint" aria-hidden="true">
+                <svg width="20" height="10" viewBox="0 0 20 10" fill="none">
+                    <path d="M1 1l9 8 9-8" stroke="#8C2017" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+        </section>
+
+        <section class="about">
+            <p class="about-text">Razza Pazza partners with entertainers, artists, creators, and leading brands to design, produce, and distribute jewelry. We&rsquo;re backed by the manufacturer behind the world&rsquo;s top luxury houses and work alongside you from concept to customer.</p>
+        </section>
     </div>
+
+    <footer>
+        <div class="footer-inner">
+            <span>New York, NY</span>
+            <span>&copy; 2026 Razza Pazza</span>
+        </div>
+    </footer>
+
+    <script>
+        console.log('%c\u{1F48E}', 'font-size: 60px;');
+
+        var container = document.querySelector('.scroll-container');
+        var about = document.querySelector('.about');
+        var aboutText = document.querySelector('.about-text');
+        var scrollHint = document.querySelector('.scroll-hint');
+        var landing = document.querySelector('.landing');
+
+        var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        function easeOutCubic(t) {
+            return 1 - Math.pow(1 - t, 3);
+        }
+
+        function onScroll() {
+            var scrollTop = container.scrollTop;
+            var viewH = container.offsetHeight;
+            var progress = Math.min(1, Math.max(0, scrollTop / viewH));
+            var eased = easeOutCubic(progress);
+
+            if (reducedMotion) {
+                aboutText.style.opacity = progress > 0.1 ? 1 : 0;
+                return;
+            }
+
+            aboutText.style.opacity = eased;
+            aboutText.style.transform = 'translateY(' + (30 * (1 - eased)) + 'px)';
+
+            if (progress > 0.05) {
+                scrollHint.classList.add('hidden');
+            } else {
+                scrollHint.classList.remove('hidden');
+            }
+        }
+
+        container.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+
+        // Click/tap to toggle
+        document.addEventListener('click', function () {
+            var viewH = container.offsetHeight;
+            var target = container.scrollTop < viewH / 2 ? viewH : 0;
+            container.scrollTo({ top: target, behavior: 'smooth' });
+        });
+
+        // Keyboard
+        document.addEventListener('keydown', function (e) {
+            var viewH = container.offsetHeight;
+            if (e.key === 'ArrowDown' || e.key === ' ' || e.key === 'PageDown') {
+                e.preventDefault();
+                container.scrollTo({ top: viewH, behavior: 'smooth' });
+            } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+                e.preventDefault();
+                container.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+    </script>
 
 </body>
 </html>
-
