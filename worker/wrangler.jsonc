@@ -1,0 +1,20 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "razzapazza-api",
+	"main": "src/index.js",
+	"compatibility_date": "2026-04-09",
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "razzapazza-emails",
+			// Run: npx wrangler d1 create razzapazza-emails
+			// Then paste the database_id here
+			"database_id": "1d54fce5-c128-4de4-9329-9e1e8a3baf0a"
+		},
+		{
+			"binding": "razzapazza_emails",
+			"database_name": "razzapazza-emails",
+			"database_id": "1d54fce5-c128-4de4-9329-9e1e8a3baf0a"
+		}
+	]
+}
