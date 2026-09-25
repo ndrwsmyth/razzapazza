@@ -1,0 +1,24 @@
+# Robots.txt for razzapazza.com
+
+# Public website content
+User-agent: *
+Disallow: /api/
+Disallow: /worker/
+Allow: /
+
+# AI search and user-requested browsing
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: Claude-SearchBot
+User-agent: Claude-User
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+Disallow: /api/
+Disallow: /worker/
+Allow: /
+
+# Site discovery
+Sitemap: https://razzapazza.com/sitemap.xml
+
+# Company overview and useful links
+# https://razzapazza.com/llms.txt

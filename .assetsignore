@@ -1,0 +1,10 @@
+# Publish only website assets, not backend code or project documents.
+*
+!index.html
+!style.css
+!razzaiconforweb.png
+!robots.txt
+!sitemap.xml
+!llms.txt
+!_headers
+!_redirects
