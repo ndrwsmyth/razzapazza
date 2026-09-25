@@ -2,6 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DBC3CBYJS3"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-DBC3CBYJS3', {
+            allow_google_signals: false,
+            allow_ad_personalization_signals: false
+        });
+    </script>
     <title>Razza Pazza | Jewelry Design, Production &amp; Distribution</title>
     <meta name="description" content="Razza Pazza partners with entertainers, artists, creators, and brands to design, produce, and distribute jewelry from concept to customer. Based in New York.">
     <link rel="canonical" href="https://razzapazza.com/">
@@ -107,6 +117,7 @@
         var WORKER_URL = 'https://api.razzapazza.com';
         var TOTAL_SECTIONS = 3;
         var turnstileEl = document.querySelector('.cf-turnstile');
+        var hasTrackedInquiry = false;
 
         var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -202,6 +213,11 @@
                     formStatus.textContent = 'Thanks \u2014 we\u2019ll be in touch.';
                     formStatus.className = 'form-status success';
                     form.querySelector('input[type="email"]').disabled = true;
+                    // Count confirmed inquiries, without sending email or verification data.
+                    if (result.data.success === true && !hasTrackedInquiry && typeof window.gtag === 'function') {
+                        hasTrackedInquiry = true;
+                        window.gtag('event', 'generate_lead', { form_id: 'contact-form' });
+                    }
                 } else if (result.status === 429) {
                     formStatus.textContent = 'Too many requests. Please try again later.';
                     formStatus.className = 'form-status error';
